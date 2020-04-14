@@ -3,6 +3,7 @@ use rand::prelude::Rng;
 pub struct Timeseries {
 	time : Vec<f64>,
 	state: Vec<i8>,
+	length: u64,
 }
 
 impl Timeseries {
@@ -10,12 +11,14 @@ impl Timeseries {
 		Timeseries {
 			time : Vec::new(),
 			state: Vec::new(),
+			length : 0,
 		}
 	}
 
 	pub fn push(&mut self, t: f64, state: i8) -> () {
 		self.time.push(t);
 		self.state.push(state);
+		self.length += 1;
 	}
 
 	pub fn get_time(&self) -> &Vec<f64> {
@@ -27,16 +30,20 @@ impl Timeseries {
 	}
 
 	pub fn delta_f(&self) -> f64 {
-		let mut n0: i64 = 0;
-		let mut n1: i64 = 0;
+		let mut n0: u64 = 0;
+		let mut n1: u64 = 0;
 		for i in self.state.iter() {
 			match i {
-				0 => n0 += 1,
-				1 => n1 += 1,
+				0 => {n0 += 1},
+				1 => {n1 += 1},
 				_ => panic!("Found an invalid state!"),
 			};
 		}
 		(n0 as f64 / n1 as f64).ln()
+	}
+
+	pub fn length(&self) -> u64 {
+		self.length
 	}
 }
 
@@ -65,12 +72,14 @@ impl Iterator for SignalGenerator {
 		let mut rng = rand::thread_rng();
 		let constant = match self.traj.signal {
 			0 => self.traj.k01,
-			_   => self.traj.k10,
+			1 => self.traj.k10,
+			_ => panic!("Found an invalid state!")
 		};
 		self.traj.time += self.delta_t;
 		let prob = prob_trans(constant, self.traj.time);
 		let accept_prob: f64 = rng.gen();
-		if accept_prob > prob {self.traj.swap_signal();}
+		println!("{} <= {}", accept_prob, prob);
+		if accept_prob <= prob {self.traj.swap_signal();}
 		Some(self.traj.signal)
 	}
 }
