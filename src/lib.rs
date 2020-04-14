@@ -33,7 +33,7 @@ impl Timeseries {
 			match i {
 				0 => n0 += 1,
 				1 => n1 += 1,
-				_ => panic!("Found and invalid state!"),
+				_ => panic!("Found an invalid state!"),
 			};
 		}
 		(n0 as f64 / n1 as f64).ln()
