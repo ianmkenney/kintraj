@@ -39,7 +39,8 @@ impl Timeseries {
 				_ => panic!("Found an invalid state!"),
 			};
 		}
-		(n0 as f64 / n1 as f64).ln()
+		assert_eq!(n1 + n0, self.length);
+		((n0 * n0) as f64 / (n1 * n1) as f64).ln()
 	}
 
 	pub fn length(&self) -> u64 {
@@ -78,7 +79,6 @@ impl Iterator for SignalGenerator {
 		self.traj.time += self.delta_t;
 		let prob = prob_trans(constant, self.traj.time);
 		let accept_prob: f64 = rng.gen();
-		println!("{} <= {}", accept_prob, prob);
 		if accept_prob <= prob {self.traj.swap_signal();}
 		Some(self.traj.signal)
 	}
